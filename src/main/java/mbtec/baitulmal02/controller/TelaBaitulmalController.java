@@ -169,6 +169,7 @@ public class TelaBaitulmalController implements Initializable {
             AlertaUtil.mostrarInfo("Atualizacao de Dados","Movimento atualizado com sucesso!");
             carregarTableviewMovimento(); // atualiza a tabela
             limparCampos();
+            listaBase();
             atualizarSaldoAtual();
         } else {
             AlertaUtil.mostrarErro("Erro ao atualizar o movimento!",
@@ -198,6 +199,7 @@ public class TelaBaitulmalController implements Initializable {
                 //AlertaUtil.mostrarInfo("Sucesso",
                 // "Movimento excluído e saldo atualizado com sucesso!");
                 carregarTableviewMovimento();
+                listaBase();
                 atualizarSaldoAtual();
                 limparCampos();
             } else {
@@ -244,6 +246,7 @@ public class TelaBaitulmalController implements Initializable {
 
                 movimentoService.registrarContribuicao(co);
                 carregarTableviewMovimento();
+                listaBase();
                 limparCampos();
                 atualizarSaldoAtual();
             }
@@ -281,8 +284,8 @@ public class TelaBaitulmalController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         carregarCombboxTipo();
-        listenerTableViewTipo();
         listaBase();
+        listenerTableViewTipo();
         carregarTableviewMovimento();
         pesquisarPorNome();
         atualizarSaldoAtual();
@@ -399,7 +402,6 @@ public class TelaBaitulmalController implements Initializable {
 
     private void listaBase(){
         movimentoList = movimentoDAO.listar();
-        System.out.println(movimentoList);
         movimentoObservableList = FXCollections.observableArrayList(movimentoList);
 
         movimentoFilteredList = new FilteredList<>(movimentoObservableList, p -> true);
@@ -510,7 +512,7 @@ public class TelaBaitulmalController implements Initializable {
             // Atualiza valor
             txtValor.setText(String.valueOf(newSelection.getValor()));
 
-            // Atualiza ComboBox
+            // Atualiza  bComboBox
             String tipoSelecionado = newSelection.getTipo();
             if (tipoSelecionado != null) {
                 String tipoNorm = normalizar(tipoSelecionado);
@@ -537,39 +539,17 @@ public class TelaBaitulmalController implements Initializable {
             if (newSelection.getContribuicao() != null ) {
 
                 txtObservacaoLeitura.setText(newSelection.getContribuicao().getObservacao());
+                txtConsumoContribuinte.setText(newSelection.getContribuicao().getContribuinte());
 
             } else if (newSelection.getConsumo() != null) {
                 txtObservacaoLeitura.setText(newSelection.getConsumo().getObservacao());
+                txtConsumoContribuinte.setText(newSelection.getConsumo().getDescricao());
             }else {
                 txtObservacaoLeitura.setText("");
+                txtConsumoContribuinte.setText("");
             }
         });
     }
-
-    //o Metodo vai facilitar nao pesquisa digita logo traz resultado!
-    public void pesquisaListener() {
-        txtPesquisa.textProperty().addListener((obs, old, novovalor) -> {
-            pesquisarMovimentos(novovalor);
-        });
-    }
-
-    //metodo que sera chamado com Listener de Pesquisa
-    private void pesquisarMovimentos(String filtro) {
-        List<Movimento> resultadoMov = movimentoDAO.buscarPorTipoData(filtro);
-
-        tableviewBaitulMal.getItems().clear();
-        limparCampos(); // se quiser limpar os campos de detalhe
-
-        if (!resultadoMov.isEmpty()) {
-            tableviewBaitulMal.getItems().addAll(resultadoMov);
-        } else {
-            // Opcional: mostrar aviso só se o campo não estiver vazio
-            if (!filtro.isEmpty()) {
-                AlertaUtil.mostrarAviso("Movimento não encontrado!", "Por favor verifique o conteudo");
-            }
-        }
-    }
-
 
     private String normalizar(String texto) {
         if (texto == null) return "";

@@ -198,7 +198,7 @@ public class MovimentoDAO {
         System.out.println("Metodo ListarMovimento invocado!");
 
         String sql = "SELECT m.*, c.idconsumo, c.descricao AS descricao_consumo, c.valor_consumo, c.data As data_consumo, " +
-                "c.observacao, co.idcontribuicao, co.contribuinte, co.valor_contribuicao, co.data AS data_contribuicao, co.observacao " +
+                "c.observacao AS cons_observacao, co.idcontribuicao, co.contribuinte, co.valor_contribuicao, co.data AS data_contribuicao, co.observacao AS cont_observacao " +
                 "FROM movimento m " +
                 "LEFT JOIN consumo c ON m.idconsumo = c.idconsumo "+
                 "LEFT JOIN contribuicao co ON m.idcontribuicao = co.idcontribuicao";
@@ -209,22 +209,12 @@ public class MovimentoDAO {
              ResultSet resultado = stmt.executeQuery()) {
 
             while (resultado.next()) {
-
+                /**
                 // primeiro Cria o objeto Consumo
-                Consumo consumo = new Consumo();
-                consumo.setIdconsumo(resultado.getInt("idconsumo")); // da tabela categoria
-                consumo.setDescricao(resultado.getString("descricao_consumo"));
-                consumo.setValorConsumo(resultado.getBigDecimal("valor_consumo"));
-                consumo.setData(resultado.getString("data_consumo"));
-                consumo.setObservacao(resultado.getString("observacao"));
+
 
                 // depois Cria o objeto Contribuicao
-                Contribuicao contribuicao = new Contribuicao();
-                contribuicao.setIdcontribuicao(resultado.getInt("idcontribuicao"));
-                contribuicao.setContribuinte(resultado.getString("contribuinte"));
-                contribuicao.setValorContribuicao(resultado.getBigDecimal("valor_contribuicao"));
-                contribuicao.setData(resultado.getString("data_contribuicao"));
-                contribuicao.setObservacao(resultado.getString("observacao"));
+
 
                 //depois cria o objeto Movimento
                 Movimento movimento = new Movimento();
@@ -235,7 +225,39 @@ public class MovimentoDAO {
                 movimento.setSaldoResultante(resultado.getBigDecimal("saldo_resultante"));
                 movimento.setConsumo(consumo);
                 movimento.setContribuicao(contribuicao);
-                retorno.add(movimento);
+                **/
+
+                Movimento m = new Movimento();
+                m.setIdmovimento(resultado.getInt("idmovimento"));
+                m.setTipo(resultado.getString("tipo"));
+                m.setValor(resultado.getBigDecimal("valor"));
+                m.setData(resultado.getString("data"));
+                m.setSaldoResultante(resultado.getBigDecimal("saldo_resultante"));
+
+                // Mapeia consumo, se existir
+                int idConsumo = resultado.getInt("idconsumo");
+                if (!resultado.wasNull()) {
+                    Consumo consumo = new Consumo();
+                    consumo.setIdconsumo(idConsumo);
+                    consumo.setDescricao(resultado.getString("descricao_consumo"));
+                    consumo.setValorConsumo(resultado.getBigDecimal("valor_consumo"));
+                    consumo.setData(resultado.getString("data_consumo"));
+                    consumo.setObservacao(resultado.getString("cons_observacao"));
+                    m.setConsumo(consumo);
+                }
+
+                // Mapeia contribuição, se existir
+                int idContribuicao = resultado.getInt("idcontribuicao");
+                if (!resultado.wasNull()) {
+                    Contribuicao contribuicao = new Contribuicao();
+                    contribuicao.setIdcontribuicao(idContribuicao);
+                    contribuicao.setContribuinte(resultado.getString("contribuinte"));
+                    contribuicao.setValorContribuicao(resultado.getBigDecimal("valor_contribuicao"));
+                    contribuicao.setData(resultado.getString("data_contribuicao"));
+                    contribuicao.setObservacao(resultado.getString("cont_observacao"));
+                    m.setContribuicao(contribuicao);
+                }
+                retorno.add(m);
             }
         } catch (SQLException e) {
             Logger.getLogger(MovimentoDAO.class.getName()).log(Level.SEVERE, null, e);
@@ -252,12 +274,13 @@ public class MovimentoDAO {
             c.descricao AS consumo_descricao, 
             c.valor_consumo AS consumo_valor, 
             c.data AS consumo_data, 
-            c.observacao AS consumo_obs,
+            c.observacao AS obser_Consumo,
 
             cb.contribuinte AS contrib_contribuinte, 
             cb.valor_contribuicao AS contrib_valor, 
             cb.data AS contrib_data,
             cb.observacao AS contrib_obs
+            
         FROM movimento m
         LEFT JOIN consumo c ON m.idconsumo = c.idconsumo
         LEFT JOIN contribuicao cb ON m.idcontribuicao = cb.idcontribuicao
@@ -286,7 +309,7 @@ public class MovimentoDAO {
                     consumo.setDescricao(rs.getString("consumo_descricao"));
                     consumo.setValorConsumo(rs.getBigDecimal("consumo_valor"));
                     consumo.setData(rs.getString("consumo_data"));
-                    consumo.setObservacao(rs.getString("consumo_obs"));
+                    consumo.setObservacao(rs.getString("obser_Consumo"));
                     m.setConsumo(consumo);
                 }
 
@@ -312,7 +335,6 @@ public class MovimentoDAO {
     }
 
     public void limparConsumo(int idMovimento) {
-        System.out.println("Limpar consumo DAO invocado");
         String sql = "UPDATE movimento SET idconsumo = NULL WHERE idmovimento = ?";
         try (Connection conn = ConexaoSQLite.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
