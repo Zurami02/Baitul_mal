@@ -209,23 +209,6 @@ public class MovimentoDAO {
              ResultSet resultado = stmt.executeQuery()) {
 
             while (resultado.next()) {
-                /**
-                // primeiro Cria o objeto Consumo
-
-
-                // depois Cria o objeto Contribuicao
-
-
-                //depois cria o objeto Movimento
-                Movimento movimento = new Movimento();
-                movimento.setIdmovimento(resultado.getInt("idmovimento"));
-                movimento.setTipo(resultado.getString("tipo"));
-                movimento.setValor(resultado.getBigDecimal("valor"));
-                movimento.setData(resultado.getString("data"));
-                movimento.setSaldoResultante(resultado.getBigDecimal("saldo_resultante"));
-                movimento.setConsumo(consumo);
-                movimento.setContribuicao(contribuicao);
-                **/
 
                 Movimento m = new Movimento();
                 m.setIdmovimento(resultado.getInt("idmovimento"));
