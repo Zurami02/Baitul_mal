@@ -28,7 +28,7 @@
           <Menu mnemonicParsing="false" text="ISLAM">
             <items>
               <MenuItem mnemonicParsing="false" text="Sobre" />
-                  <MenuItem mnemonicParsing="false" text="Close" />
+                  <MenuItem mnemonicParsing="false" onAction="#menuItemClose" text="Close" />
             </items>
           </Menu>
           <Menu disable="true" mnemonicParsing="false" text="ISLAM PARA TODOS">
