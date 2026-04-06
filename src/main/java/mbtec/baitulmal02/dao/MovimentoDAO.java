@@ -7,6 +7,7 @@ import mbtec.baitulmal02.model.Contribuicao;
 import mbtec.baitulmal02.model.Movimento;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -195,7 +196,6 @@ public class MovimentoDAO {
 
 
     public List<Movimento> listar() {
-        System.out.println("Metodo ListarMovimento invocado!");
 
         String sql = "SELECT m.*, c.idconsumo, c.descricao AS descricao_consumo, c.valor_consumo, c.data As data_consumo, " +
                 "c.observacao AS cons_observacao, co.idcontribuicao, co.contribuinte, co.valor_contribuicao, co.data AS data_contribuicao, co.observacao AS cont_observacao " +
@@ -230,6 +230,62 @@ public class MovimentoDAO {
                 }
 
                 // Mapeia contribuição, se existir
+                int idContribuicao = resultado.getInt("idcontribuicao");
+                if (!resultado.wasNull()) {
+                    Contribuicao contribuicao = new Contribuicao();
+                    contribuicao.setIdcontribuicao(idContribuicao);
+                    contribuicao.setContribuinte(resultado.getString("contribuinte"));
+                    contribuicao.setValorContribuicao(resultado.getBigDecimal("valor_contribuicao"));
+                    contribuicao.setData(resultado.getString("data_contribuicao"));
+                    contribuicao.setObservacao(resultado.getString("cont_observacao"));
+                    m.setContribuicao(contribuicao);
+                }
+                retorno.add(m);
+            }
+        } catch (SQLException e) {
+            Logger.getLogger(MovimentoDAO.class.getName()).log(Level.SEVERE, null, e);
+        }
+        return retorno;
+    }
+
+    public List<Movimento> listarPorPeriodo(LocalDate inicio, LocalDate datafinal){
+
+        String sql = "SELECT m.idmovimento, m.tipo, m.valor, m.data, m.saldo_resultante, " +
+                "c.idconsumo, c.descricao AS descricao_consumo, c.valor_consumo, c.data As data_consumo, " +
+                "c.observacao AS cons_observacao, co.idcontribuicao, co.contribuinte, co.valor_contribuicao, co.data AS data_contribuicao, co.observacao AS cont_observacao " +
+                "FROM movimento m " +
+                "LEFT JOIN consumo c ON m.idconsumo = c.idconsumo "+
+                "LEFT JOIN contribuicao co ON m.idcontribuicao = co.idcontribuicao " +
+                "WHERE date(m.data) BETWEEN ? AND ?";
+
+        List<Movimento> retorno = new ArrayList<>();
+        try (Connection connection = ConexaoSQLite.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setString(1, inicio.toString());
+            stmt.setString(2, datafinal.toString());
+
+            ResultSet resultado = stmt.executeQuery();
+            while (resultado.next()) {
+
+                Movimento m = new Movimento();
+                m.setIdmovimento(resultado.getInt("idmovimento"));
+                m.setTipo(resultado.getString("tipo"));
+                m.setValor(resultado.getBigDecimal("valor"));
+                m.setData(resultado.getString("data"));
+                m.setSaldoResultante(resultado.getBigDecimal("saldo_resultante"));
+
+                int idConsumo = resultado.getInt("idconsumo");
+                if (!resultado.wasNull()) {
+                    Consumo consumo = new Consumo();
+                    consumo.setIdconsumo(idConsumo);
+                    consumo.setDescricao(resultado.getString("descricao_consumo"));
+                    consumo.setValorConsumo(resultado.getBigDecimal("valor_consumo"));
+                    consumo.setData(resultado.getString("data_consumo"));
+                    consumo.setObservacao(resultado.getString("cons_observacao"));
+                    m.setConsumo(consumo);
+                }
+
                 int idContribuicao = resultado.getInt("idcontribuicao");
                 if (!resultado.wasNull()) {
                     Contribuicao contribuicao = new Contribuicao();

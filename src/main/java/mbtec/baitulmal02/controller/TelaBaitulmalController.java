@@ -2,7 +2,6 @@ package mbtec.baitulmal02.controller;
 
 
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -11,7 +10,6 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -23,7 +21,7 @@ import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import mbtec.baitulmal02.dao.ContaPrincipalDAO;
 import mbtec.baitulmal02.dao.MovimentoDAO;
-import mbtec.baitulmal02.dao.TipoDAO;
+import mbtec.baitulmal02.dao.RelatorioDAO;
 import mbtec.baitulmal02.model.*;
 import mbtec.baitulmal02.service.MovimentoService;
 import mbtec.baitulmal02.utilitario.AlertaUtil;
@@ -104,7 +102,7 @@ public class TelaBaitulmalController implements Initializable {
     private FilteredList<Movimento> movimentoFilteredList;
     private List<TipoMovimento> tipoList = new ArrayList<>();
     private ObservableList<TipoMovimento> tipoObservableList;
-    private final TipoDAO tipoDAO = new TipoDAO();
+    private final RelatorioDAO tipoDAO = new RelatorioDAO();
 
     @FXML
     void btnAdicionarTiposImagem(MouseEvent event) throws IOException {
@@ -113,13 +111,19 @@ public class TelaBaitulmalController implements Initializable {
 
     @FXML
     void btnAdicionarTipos(ActionEvent event) throws IOException {
-//        openPaginas(event, "/mbtec/baitulmal02/tipo.fxml");
 //        carregarCombboxTipo();
     }
 
     @FXML
-    void btnExtrato(ActionEvent event) {
+    void btnExtrato(ActionEvent event) throws IOException {
+        LocalDate dataInicial = dataPickerInicial.getValue();
+        LocalDate dataFinal = datapickerfinal.getValue();
 
+        if (dataInicial == null || dataFinal == null){
+            AlertaUtil.mostrarErro("Falha", "Por favor forneca as datas");
+            return;
+        }
+        openPaginas(event, "/mbtec/baitulmal02/extrato.fxml", dataInicial, dataFinal);
     }
 
     @FXML
@@ -408,52 +412,24 @@ public class TelaBaitulmalController implements Initializable {
         tableviewBaitulMal.setItems(movimentoFilteredList);
     }
 
-    public void openPaginas(Event event, String pagina) throws IOException {
+    public void openPaginas(Event event, String pagina,
+                            LocalDate dataInicial, LocalDate dataFinal) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(pagina));
         Parent root = loader.load();
 
+        RelatorioController rc = loader.getController();
+        rc.setDatas(dataInicial, dataFinal);
         Scene scene = new Scene(root);
         Stage stage = new Stage();
         stage.setScene(scene);
 
-        //Não permite maximizar
         stage.setResizable(false);
-
-        //(bloqueia a tela principal até fechar)
         stage.initModality(Modality.APPLICATION_MODAL);
-
-        //Para esconder bar de x-
         stage.initStyle(StageStyle.UNDECORATED);
-
-        // Título da janela
         stage.setTitle("ISLAM_PARA_TODOS");
-
-        // Centralizar na tela
         stage.centerOnScreen();
 
         stage.showAndWait(); // sempre por último
-    }
-
-    //Nao eh necessario ser usado
-    private void comboboxListener() {
-        // Listener para quando o usuário selecionar um item
-        combomboxTipos.setOnAction(event -> {
-            TipoMovimento selecionado = combomboxTipos.getSelectionModel().getSelectedItem();
-            if (selecionado != null) {
-                lblConsumoContribuicao.setText(selecionado.getDescricao());
-
-                String tipo = lblConsumoContribuicao.getText();
-                if (tipo.equalsIgnoreCase("Contribuicao")) {
-                    txtObservacao.setDisable(true);
-                    txtObservacao.setVisible(false);
-                    lblObservacao.setVisible(false);
-                } else {
-                    txtObservacao.setDisable(false);
-                    txtObservacao.setVisible(true);
-                    lblObservacao.setVisible(true);
-                }
-            }
-        });
     }
 
     //Os 2 metodos verifica a validacao dos dados digitado pelo usuario

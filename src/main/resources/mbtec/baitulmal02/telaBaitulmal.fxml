@@ -106,9 +106,9 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button layoutX="892.0" layoutY="209.0" mnemonicParsing="false" onAction="#btnPesquisar">
+            <Button disable="true" layoutX="892.0" layoutY="209.0" mnemonicParsing="false" onAction="#btnPesquisar">
                <graphic>
-                  <ImageView fitHeight="22.0" fitWidth="34.0" onMouseClicked="#btnAdicionarTipos" pickOnBounds="true" preserveRatio="true">
+                  <ImageView disable="true" fitHeight="22.0" fitWidth="34.0" onMouseClicked="#btnAdicionarTipos" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@icones/icons8-pesquisar.png" />
                      </image>
@@ -181,7 +181,7 @@
                            <graphic>
                               <ImageView fitHeight="22.0" fitWidth="34.0" onMouseClicked="#btnAdicionarTipos" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@icones/impressão-50.png" />
+                                    <Image url="@icones/extrato-bancário.png" />
                                  </image>
                               </ImageView>
                            </graphic>

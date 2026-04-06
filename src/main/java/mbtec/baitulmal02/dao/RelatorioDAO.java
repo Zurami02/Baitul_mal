@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TipoDAO {
+public class RelatorioDAO {
     public void inserir(Tipo tipo) {
         String sql = "INSERT INTO tipo (descricao_tipo) VALUES (?)";
         try (Connection connection = ConexaoSQLite.getConnection();
@@ -50,7 +50,7 @@ public class TipoDAO {
             stmt.execute();
             return true;
         } catch (SQLException e) {
-            Logger.getLogger(TipoDAO.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(RelatorioDAO.class.getName()).log(Level.SEVERE, null, e);
             return false;
         }
     }
@@ -63,7 +63,7 @@ public class TipoDAO {
             stmt.execute();
             return true;
         } catch (SQLException e) {
-            Logger.getLogger(TipoDAO.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(RelatorioDAO.class.getName()).log(Level.SEVERE, null, e);
             return false;
         }
     }
