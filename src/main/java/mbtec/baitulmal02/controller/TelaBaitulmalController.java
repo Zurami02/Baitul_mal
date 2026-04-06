@@ -119,8 +119,8 @@ public class TelaBaitulmalController implements Initializable {
         LocalDate dataInicial = dataPickerInicial.getValue();
         LocalDate dataFinal = datapickerfinal.getValue();
 
-        if (dataInicial == null || dataFinal == null){
-            AlertaUtil.mostrarErro("Falha", "Por favor forneca as datas");
+        if (dataInicial == null || dataFinal == null || dataInicial.isAfter(dataFinal)){
+            AlertaUtil.mostrarErro("Falha", "Por favor verifique as datas e data inicial nao pode ser > data final");
             return;
         }
         openPaginas(event, "/mbtec/baitulmal02/extrato.fxml", dataInicial, dataFinal);
@@ -214,17 +214,17 @@ public class TelaBaitulmalController implements Initializable {
 
     @FXML
     void btnInserir(ActionEvent event) {
-        String tipo = String.valueOf(combomboxTipos.getValue());
+        TipoMovimento tipoSelecionado = combomboxTipos.getValue();
         String valorTexto = txtValor.getText();
+
         // Evita NumberFormatException
-        if (valorTexto == null || valorTexto.trim().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erro no Cadastro");
-            alert.setHeaderText("Valor inválido!");
-            alert.setContentText("Por favor, preencha o campo Valor.");
-            alert.show();
+        if (valorTexto == null || valorTexto.trim().isEmpty() || tipoSelecionado == null) {
+            AlertaUtil.mostrarErro("Campo sem dados!","Certifique que preencheu todos os campos");
             return;
         }
+
+        String tipo = tipoSelecionado.getDescricao();
+
         BigDecimal valor = new BigDecimal(String.valueOf(txtValor.getText()));
         LocalDate data = dataPickerMovimento.getValue();
         if (tipo.equalsIgnoreCase(TipoMovimento.SAIDA.getDescricao())) {
