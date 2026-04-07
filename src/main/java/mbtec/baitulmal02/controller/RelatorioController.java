@@ -46,8 +46,12 @@ public class RelatorioController implements Initializable {
     @FXML
     private TableView<Movimento> tableViewExtrato;
 
-    LocalDate data_incial_service;
-    LocalDate data_final_service;
+    private LocalDate data_incial_service;
+    private LocalDate data_final_service;
+
+    private boolean estadoTabela;
+
+
 
     private Movimento movimento = new Movimento();
     private List<Movimento> movimentoList = new ArrayList<>();
@@ -69,14 +73,15 @@ public class RelatorioController implements Initializable {
 
     @FXML
     void btnImprimir(ActionEvent event) {
-
+        if (estadoTabela){
+            AlertaUtil.mostrarErro("Falha ao imprimir!","Sem dados para imprimir");
+            return;
+        }
         AlertaUtil.mostrarInfo("", "NA boa?");
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        System.out.println("Data Inicial: " + data_incial_service
-                + " e Data final: " + data_final_service);
     }
 
     public void carregarTableviewMovimento() {
@@ -108,11 +113,18 @@ public class RelatorioController implements Initializable {
         });
         colunaSaldoDisponivel.setCellValueFactory(new PropertyValueFactory<>("saldoResultante"));
 
+        //Responsavel em preencher dados na tabela
         movimentoList = movimentoDAO.listarPorPeriodo(data_incial_service, data_final_service);
         movimentoObservableList = FXCollections.observableArrayList(movimentoList);
 
         movimentoFilteredList = new FilteredList<>(movimentoObservableList, p -> true);
         tableViewExtrato.setItems(movimentoFilteredList);
+        if (movimentoList.isEmpty()) {
+            estadoTabela = true;
+            Label message = new Label("Sem dados encontrados. As datas selecionadas sem movimentos");
+            message.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: red;");
+            tableViewExtrato.setPlaceholder(message);
+        }
     }
 
     public void setDatas(LocalDate dataInicial, LocalDate dataFinal){

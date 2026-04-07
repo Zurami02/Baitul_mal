@@ -86,7 +86,6 @@ public class MovimentoService {
 
         if (sucesso) {
             contaDAO.atualizarSaldo(novoSaldo, movimento.getIdmovimento());
-            System.out.println("Saldo atualizado: " + novoSaldo);
             return true;
         } else {
             System.out.println("Falha ao excluir movimento");
@@ -97,7 +96,7 @@ public class MovimentoService {
     public boolean atualizarMovimento(Movimento movimentoAtualizado) {
        try {
 
-           System.out.println("Atualizando movimento: " + movimentoAtualizado);
+           System.out.println("Atualizando movimento em service: " + movimentoAtualizado);
 
            Movimento movimentoOriginal = movimentoDAO.buscarPorId(movimentoAtualizado.getIdmovimento());
            if (movimentoOriginal == null) {

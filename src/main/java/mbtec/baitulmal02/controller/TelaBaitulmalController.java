@@ -28,6 +28,7 @@ import mbtec.baitulmal02.model.*;
 import mbtec.baitulmal02.service.MovimentoService;
 import mbtec.baitulmal02.utilitario.AlertaUtil;
 import mbtec.baitulmal02.utilitario.TipoMovimento;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -112,7 +113,7 @@ public class TelaBaitulmalController implements Initializable {
     }
 
     @FXML
-    void menuItemClose(ActionEvent event) {
+    void menuItemClose(@NotNull ActionEvent event) {
             event.consume();
             Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
             alerta.setTitle("Confirmação");
@@ -283,12 +284,7 @@ public class TelaBaitulmalController implements Initializable {
         dataPickerMovimento.setValue(null);
         txtValor.clear();
         txtObservacao.clear();
-    }
-
-    /* util usado acima */
-    private double parseDoubleSafe(String text) throws NumberFormatException {
-        if (text == null) throw new NumberFormatException("null");
-        return Double.parseDouble(text.trim().replace(",", "."));
+        txtObservacaoLeitura.clear();
     }
 
     @FXML
