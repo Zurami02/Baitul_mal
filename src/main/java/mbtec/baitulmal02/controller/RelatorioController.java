@@ -1,5 +1,6 @@
 package mbtec.baitulmal02.controller;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +23,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class RelatorioController implements Initializable {
@@ -77,7 +79,19 @@ public class RelatorioController implements Initializable {
             AlertaUtil.mostrarErro("Falha ao imprimir!","Sem dados para imprimir");
             return;
         }
-        AlertaUtil.mostrarInfo("", "NA boa?");
+        event.consume();
+        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
+        alerta.setTitle("Incrivel!");
+        alerta.setHeaderText(null);
+        alerta.setContentText("Na boa?");
+        ButtonType btnSim = new ButtonType("Sim");
+        ButtonType btnNao = new ButtonType("Não", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alerta.getButtonTypes().setAll(btnSim, btnNao);
+        Optional<ButtonType> resultado = alerta.showAndWait();
+        if (resultado.isPresent() && resultado.get() == btnSim) {
+            AlertaUtil.mostrarInfo("", "Você é o cara!");
+        }
+
     }
 
     @Override

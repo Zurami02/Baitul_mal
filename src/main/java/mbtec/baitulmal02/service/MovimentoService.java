@@ -96,11 +96,20 @@ public class MovimentoService {
     public boolean atualizarMovimento(Movimento movimentoAtualizado) {
        try {
 
-           System.out.println("Atualizando movimento em service: " + movimentoAtualizado);
-
            Movimento movimentoOriginal = movimentoDAO.buscarPorId(movimentoAtualizado.getIdmovimento());
            if (movimentoOriginal == null) {
                System.out.println("Movimento não encontrado!");
+               return false;
+           }
+           if (movimentoAtualizado.getTipo().equalsIgnoreCase(TipoMovimento.SAIDA.getDescricao())
+                   && movimentoAtualizado.getConsumo() == null) {
+               System.out.println("Erro: SAÍDA sem consumo!");
+               return false;
+           }
+
+           if (movimentoAtualizado.getTipo().equalsIgnoreCase(TipoMovimento.ENTRADA.getDescricao())
+                   && movimentoAtualizado.getContribuicao() == null) {
+               System.out.println("Erro: ENTRADA sem contribuição!");
                return false;
            }
 
@@ -125,14 +134,25 @@ public class MovimentoService {
 
            // Atualiza conforme o novo tipo
            if (movimentoAtualizado.getTipo().equalsIgnoreCase(TipoMovimento.SAIDA.getDescricao())) {
-               consumoDAO.editar(movimentoAtualizado.getConsumo());
+               if (movimentoAtualizado.getConsumo().getIdconsumo() == 0) {
+                   // novo consumo — inserir e obter o id gerado
+                   int novoId = consumoDAO.inserirConsumo(movimentoAtualizado.getConsumo());
+                   movimentoAtualizado.getConsumo().setIdconsumo(novoId);
+               } else {
+                   consumoDAO.editar(movimentoAtualizado.getConsumo());
+               }
                novoSaldo = saldoAtual.subtract(movimentoAtualizado.getValor());
 
                movimentoDAO.editar(movimentoAtualizado);
                contaDAO.atualizarSaldo(novoSaldo, movimentoAtualizado.getIdmovimento());
 
            } else if (movimentoAtualizado.getTipo().equalsIgnoreCase(TipoMovimento.ENTRADA.getDescricao())) {
-               contribuicaoDAO.editar(movimentoAtualizado.getContribuicao());
+               if (movimentoAtualizado.getContribuicao().getIdcontribuicao() == 0) {
+                   int novoId = contribuicaoDAO.inserirContribuicao(movimentoAtualizado.getContribuicao());
+                   movimentoAtualizado.getContribuicao().setIdcontribuicao(novoId);
+               } else {
+                   contribuicaoDAO.editar(movimentoAtualizado.getContribuicao());
+               }
                novoSaldo = saldoAtual.add(movimentoAtualizado.getValor());
 
                movimentoDAO.editar(movimentoAtualizado);

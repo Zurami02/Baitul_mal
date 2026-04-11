@@ -114,19 +114,19 @@ public class TelaBaitulmalController implements Initializable {
 
     @FXML
     void menuItemClose(@NotNull ActionEvent event) {
-            event.consume();
-            Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
-            alerta.setTitle("Confirmação");
-            alerta.setHeaderText(null);
-            alerta.setContentText("Tem certeza que deseja sair do sistema?");
-            ButtonType btnSim = new ButtonType("Sim");
-            ButtonType btnNao = new ButtonType("Não", ButtonBar.ButtonData.CANCEL_CLOSE);
-            alerta.getButtonTypes().setAll(btnSim, btnNao);
-            Optional<ButtonType> resultado = alerta.showAndWait();
-            if (resultado.isPresent() && resultado.get() == btnSim) {
-                System.out.println("Dentro de if btnSim");
-                Platform.exit();
-            }
+        event.consume();
+        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
+        alerta.setTitle("Confirmação");
+        alerta.setHeaderText(null);
+        alerta.setContentText("Tem certeza que deseja sair do sistema?");
+        ButtonType btnSim = new ButtonType("Sim");
+        ButtonType btnNao = new ButtonType("Não", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alerta.getButtonTypes().setAll(btnSim, btnNao);
+        Optional<ButtonType> resultado = alerta.showAndWait();
+        if (resultado.isPresent() && resultado.get() == btnSim) {
+            System.out.println("Dentro de if btnSim");
+            Platform.exit();
+        }
     }
 
     @FXML
@@ -139,7 +139,7 @@ public class TelaBaitulmalController implements Initializable {
         LocalDate dataInicial = dataPickerInicial.getValue();
         LocalDate dataFinal = datapickerfinal.getValue();
 
-        if (dataInicial == null || dataFinal == null || dataInicial.isAfter(dataFinal)){
+        if (dataInicial == null || dataFinal == null || dataInicial.isAfter(dataFinal)) {
             AlertaUtil.mostrarErro("Falha", "Por favor verifique as datas e data inicial nao pode ser > data final");
             return;
         }
@@ -149,40 +149,52 @@ public class TelaBaitulmalController implements Initializable {
     @FXML
     void btnAtualizar(ActionEvent event) {
         Movimento movimentoSelecionado = tableviewBaitulMal.getSelectionModel().getSelectedItem();
-        BigDecimal valor = new BigDecimal(String.valueOf(txtValor.getText()));
         if (movimentoSelecionado == null) {
             AlertaUtil.mostrarErro("Erro na atualizacao de Dados",
                     "Selecione um movimento para atualizar!");
             return;
         }
 
-        // Atualiza com base nos campos preenchidos na tela
-        movimentoSelecionado.setData(dataPickerMovimento.getValue().toString());
-        movimentoSelecionado.setValor(valor);
+        BigDecimal valor = new BigDecimal(String.valueOf(txtValor.getText()));
+        LocalDate data = dataPickerMovimento.getValue();
+        TipoMovimento tipo = combomboxTipos.getValue();
+        if (tipo == null) {
+            AlertaUtil.mostrarErro("","Selecione o tipo de movimento!");
+            return;
+        }
+        String movimento = txtConsumoContribuinte.getText();
+        String observ = txtObservacao.getText();
 
-        // Define tipo (pode vir de ComboBox ou campo)
-        movimentoSelecionado.setTipo(String.valueOf(combomboxTipos.getValue()));
+        if (!houveAlteracao(movimentoSelecionado, valor, data, tipo, movimento, observ)) {
+            AlertaUtil.mostrarInfo("Erro na Atualizacao", "Nenhuma alteração foi feita no movimento selecionado.");
+            return;
+        }
+
+        // Atualiza com base nos campos preenchidos na tela
+        movimentoSelecionado.setData(data.toString());
+        movimentoSelecionado.setValor(valor);
+        movimentoSelecionado.setTipo(tipo.getDescricao());
 
         // Atualiza relação com consumo ou contribuição
         if (movimentoSelecionado.getTipo().equalsIgnoreCase(TipoMovimento.SAIDA.getDescricao())) {
             Consumo c = movimentoSelecionado.getConsumo();
-            c.setDescricao(txtConsumoContribuinte.getText());
+            if (c == null) c = new Consumo();
+            c.setDescricao(movimento);
             c.setValorConsumo(valor);
-            c.setData(dataPickerMovimento.getValue().toString());
-            c.setObservacao(txtObservacao.getText());
+            c.setData(data.toString());
+            c.setObservacao(observ);
             movimentoSelecionado.setConsumo(c);
-            carregarTableviewMovimento();
-            limparCampos();
+            movimentoSelecionado.setContribuicao(null);
 
         } else if (movimentoSelecionado.getTipo().equalsIgnoreCase(TipoMovimento.ENTRADA.getDescricao())) {
             Contribuicao cb = movimentoSelecionado.getContribuicao();
-            cb.setContribuinte(txtConsumoContribuinte.getText());
+            if (cb == null) cb = new Contribuicao();
+            cb.setContribuinte(movimento);
             cb.setValorContribuicao(valor);
-            cb.setData(dataPickerMovimento.getValue().toString());
+            cb.setData(data.toString());
+            cb.setObservacao(observ);
             movimentoSelecionado.setContribuicao(cb);
-            carregarTableviewMovimento();
-            limparCampos();
-            atualizarSaldoAtual();
+            movimentoSelecionado.setConsumo(null);
         }
 
         // Chama o serviço
@@ -190,7 +202,7 @@ public class TelaBaitulmalController implements Initializable {
         boolean atualizado = service.atualizarMovimento(movimentoSelecionado);
 
         if (atualizado) {
-            AlertaUtil.mostrarInfo("Atualizacao de Dados","Movimento atualizado com sucesso!");
+            AlertaUtil.mostrarInfo("Atualizacao de Dados", "Movimento atualizado com sucesso!");
             carregarTableviewMovimento(); // atualiza a tabela
             limparCampos();
             listaBase();
@@ -239,7 +251,7 @@ public class TelaBaitulmalController implements Initializable {
 
         // Evita NumberFormatException
         if (valorTexto == null || valorTexto.trim().isEmpty() || tipoSelecionado == null) {
-            AlertaUtil.mostrarErro("Campo sem dados!","Certifique que preencheu todos os campos");
+            AlertaUtil.mostrarErro("Campo sem dados!", "Certifique que preencheu todos os campos");
             return;
         }
 
@@ -385,9 +397,9 @@ public class TelaBaitulmalController implements Initializable {
         colunaValorTotalMovimento.setCellValueFactory(new PropertyValueFactory<>("saldoResultante"));
     }
 
-    private void pesquisarPorNome(){
+    private void pesquisarPorNome() {
         //Listener para txtProcuraNome
-        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> movimentoFilteredList.setPredicate(movimentoItem->{
+        txtPesquisa.textProperty().addListener((observable, oldValue, newValue) -> movimentoFilteredList.setPredicate(movimentoItem -> {
             if (newValue == null || newValue.isBlank()) {
                 return true;
             }
@@ -414,7 +426,7 @@ public class TelaBaitulmalController implements Initializable {
 
     }
 
-    private void listaBase(){
+    private void listaBase() {
         movimentoList = movimentoDAO.listar();
         movimentoObservableList = FXCollections.observableArrayList(movimentoList);
 
@@ -522,7 +534,7 @@ public class TelaBaitulmalController implements Initializable {
                 }
             }
 
-            if (newSelection.getContribuicao() != null ) {
+            if (newSelection.getContribuicao() != null) {
 
                 txtObservacaoLeitura.setText(newSelection.getContribuicao().getObservacao());
                 txtObservacao.setText(newSelection.getContribuicao().getObservacao());
@@ -532,7 +544,7 @@ public class TelaBaitulmalController implements Initializable {
                 txtObservacaoLeitura.setText(newSelection.getConsumo().getObservacao());
                 txtObservacao.setText(newSelection.getConsumo().getObservacao());
                 txtConsumoContribuinte.setText(newSelection.getConsumo().getDescricao());
-            }else {
+            } else {
                 txtObservacaoLeitura.setText("");
                 txtConsumoContribuinte.setText("");
                 txtObservacao.setText("");
@@ -545,5 +557,26 @@ public class TelaBaitulmalController implements Initializable {
         return Normalizer.normalize(texto.trim(), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "") // remove acentos
                 .toLowerCase();
+    }
+
+    private boolean houveAlteracao(Movimento m, BigDecimal valor, LocalDate data, TipoMovimento tipo, String movimento, String observ) {
+        boolean valorAlterado = !m.getValor().equals(valor);
+        boolean dataAlterada = !m.getData().equals(data.toString());
+        boolean tipoAlterado = !m.getTipo().equals(tipo.getDescricao());
+
+        boolean descricaoAlterada;
+        if (m.getConsumo() != null) {
+            String descricao = m.getConsumo().getDescricao() != null ? m.getConsumo().getDescricao() : "";
+            String observacao = m.getConsumo().getObservacao() != null ? m.getConsumo().getObservacao() : "";
+            descricaoAlterada = !descricao.equals(movimento) || !observacao.equals(observ);
+        } else if (m.getContribuicao() != null) {
+            String contribuinte = m.getContribuicao().getContribuinte() != null ? m.getContribuicao().getContribuinte() : "";
+            String observacao = m.getContribuicao().getObservacao() != null ? m.getContribuicao().getObservacao() : "";
+            descricaoAlterada = !contribuinte.equals(movimento) || !observacao.equals(observ);
+        } else {
+            descricaoAlterada = false;
+        }
+
+        return valorAlterado || dataAlterada || tipoAlterado || descricaoAlterada;
     }
 }

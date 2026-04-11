@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class ConsumoDAO {
 
-    public void inserirConsumo(Consumo consumo) {
+    public int inserirConsumo(Consumo consumo) {
         System.out.println("DAO Consumo invocada");
         String sqlConsumo = "INSERT INTO consumo(descricao, valor_consumo, data, observacao) VALUES (?, ?, ?, ?)";
         try (Connection conn = ConexaoSQLite.getConnection();
@@ -29,11 +29,14 @@ public class ConsumoDAO {
             if (rs.next()) {
                 int idConsumo = rs.getInt(1);
                 consumo.setIdconsumo(idConsumo);
+                return idConsumo;
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return 0;
     }
 
     public List<Consumo> listarTodos() {

@@ -4,6 +4,7 @@ package mbtec.baitulmal02.dao;
 
 import mbtec.baitulmal02.DB.ConexaoSQLite;
 import mbtec.baitulmal02.model.Contribuicao;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ContribuicaoDAO {
-    public void inserirContribuicao(Contribuicao contribuicao) {
+    public int inserirContribuicao(@NotNull Contribuicao contribuicao) {
         String sql = "INSERT INTO contribuicao (contribuinte, valor_contribuicao, data, observacao) VALUES (?, ?, ?, ?)";
         try (Connection connection = ConexaoSQLite.getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -23,14 +24,17 @@ public class ContribuicaoDAO {
             stmt.executeUpdate();
 
             //Recuperar o ID gerado
-            try (ResultSet rs = stmt.getGeneratedKeys()){
-                if (rs.next()){
-                    contribuicao.setIdcontribuicao(rs.getInt(1));//atualizar o objeto
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    int idCont = rs.getInt(1);
+                    contribuicao.setIdcontribuicao(idCont);
+                    return idCont;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return 0;
     }
 
     public List<Contribuicao> listarTodos() {

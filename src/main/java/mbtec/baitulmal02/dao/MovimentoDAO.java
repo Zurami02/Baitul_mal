@@ -5,6 +5,7 @@ import mbtec.baitulmal02.DB.ConexaoSQLite;
 import mbtec.baitulmal02.model.Consumo;
 import mbtec.baitulmal02.model.Contribuicao;
 import mbtec.baitulmal02.model.Movimento;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -98,7 +99,7 @@ public class MovimentoDAO {
     }
 
 
-    public boolean editar(Movimento movimento) {
+    public boolean editar(@NotNull Movimento movimento) {
         System.out.println("EditarMovimentoDAO invocada");
 
         String sql = "UPDATE movimento SET tipo=?, valor=?, data=?, saldo_resultante=?, idconsumo=?, idcontribuicao=? WHERE idmovimento=?";
@@ -108,8 +109,17 @@ public class MovimentoDAO {
             stmt.setBigDecimal(2, movimento.getValor());
             stmt.setString(3, movimento.getData());
             stmt.setBigDecimal(4, movimento.getSaldoResultante());
-            stmt.setInt(5, movimento.getConsumo().getIdconsumo());
-            stmt.setInt(6, movimento.getContribuicao().getIdcontribuicao());
+            if (movimento.getConsumo() != null) {
+                stmt.setInt(5, movimento.getConsumo().getIdconsumo());
+            } else {
+                stmt.setNull(5, Types.INTEGER);
+            }
+
+            if (movimento.getContribuicao() != null) {
+                stmt.setInt(6, movimento.getContribuicao().getIdcontribuicao());
+            } else {
+                stmt.setNull(6, Types.INTEGER);
+            }
             stmt.setInt(7, movimento.getIdmovimento());
             stmt.execute();
             return true;
